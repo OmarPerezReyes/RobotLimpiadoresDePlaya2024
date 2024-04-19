@@ -45,6 +45,8 @@ imagen = cv2.imread('lata1.jpg')
 # Llamar a la función para detectar la tonalidad negra
 porcentaje_azul_celeste, porcentaje_negro = detectar_tonalidad(imagen)
 
+
+
 # Mostrar el porcentaje de tonalidad azul-celeste
 print("Porcentaje de tonalidad azul-celeste en la imagen:", porcentaje_azul_celeste)
 print("Porcentaje de tonalidad negra en la imagen:", porcentaje_negro)
