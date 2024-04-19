@@ -11,6 +11,7 @@ IN2 = 27  # Pin de dirección motor 1
 # Definición de pines para motor 2
 IN3 = 23  # Pin de dirección motor 2
 IN4 = 24  # Pin de dirección motor 2
+out1 = 16 
 
 # Configuración de pines
 GPIO.setmode(GPIO.BCM)
@@ -18,6 +19,7 @@ GPIO.setup(IN1, GPIO.OUT)
 GPIO.setup(IN2, GPIO.OUT)
 GPIO.setup(IN3, GPIO.OUT)
 GPIO.setup(IN4, GPIO.OUT)
+GPIO.setup(out1, GPIO.OUT)
 
 # Función para mover ambos motores hacia adelante
 def forward():
@@ -91,51 +93,58 @@ contador = 0
 # Lógica principal del programa
 try:
     while True:
-    forward()
-    # Capturar imagen de la cámara
-    ret, frame = cam.read()
-    
-    # Incrementar el contador
-    contador += 1
-    
-    # Revisar la tonalidad cada 10 frames
-    if contador == 30:
-        # Llamar a la función para detectar la tonalidad azul-celeste y negra
-        porcentaje_azul_celeste, porcentaje_negro = detectar_tonalidad(frame)
-
-        # Mostrar el porcentaje de tonalidad azul-celeste y negra
-        #print("Porcentaje de tonalidad azul-celeste en el imagen:", porcentaje_azul_celeste)
-        #print("Porcentaje de tonalidad negra en la imagen:", porcentaje_negro)
+        forward()
+        time.sleep(0.5);
+        GPIO.output(out1, GPIO.LOW)  # Apaga el pin
+        # Capturar imagen de la cámara
+        ret, frame = cam.read()
         
-        if(porcentaje_azul_celeste>.50){
-            #print("AGUA");
-            stop()
-            time.sleep(1.5)
-            backward();
-            time.sleep(2.5)
-            right()
-            time.sleep(2.5)
-            forward()
-        }
+        # Incrementar el contador
+        contador += 1
         
-        if(porcentaje_negro>.40){
-            #print("LATA");
-            stop();
-        }
+        # Revisar la tonalidad cada 10 frames
+        if contador == 30:
+            # Llamar a la función para detectar la tonalidad azul-celeste y negra
+            porcentaje_azul_celeste, porcentaje_negro = detectar_tonalidad(frame)
+
+            # Mostrar el porcentaje de tonalidad azul-celeste y negra
+            #print("Porcentaje de tonalidad azul-celeste en el imagen:", porcentaje_azul_celeste)
+            #print("Porcentaje de tonalidad negra en la imagen:", porcentaje_negro)
+            
+            if porcentaje_azul_celeste > 50:
+                #print("AGUA")
+                stop()
+                time.sleep(1)
+                backward()
+                time.sleep(2.5)
+                right()
+                time.sleep(2)
+                forward()
+                
+            if porcentaje_negro > 40:
+                #print("LATA")
+                stop()
+                time.sleep(0.5);
+                backward()
+                time.sleep(1.5);
+                GPIO.output(out1, GPIO.HIGH)  # Enciende el pin
+                forward()
+                time.sleep(3.5);
+                GPIO.output(out1, GPIO.LOW)  # Apaga el pin
+            
+            # Reiniciar el contador
+            contador = 0
+
+        # Mostrar la imagen
+        cv2.imshow('Frame', frame)
         
-        # Reiniciar el contador
-        contador = 0
-
-    # Mostrar la imagen
-    cv2.imshow('Frame', frame)
-    
-    # Salir del bucle si se presiona la tecla 'q'
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
+        # Salir del bucle si se presiona la tecla 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 except KeyboardInterrupt:
     stop()  # Detiene los motores al presionar Ctrl+C
 
 finally:
     GPIO.cleanup()  # Limpia los pines GPIO al salir del programa
+
