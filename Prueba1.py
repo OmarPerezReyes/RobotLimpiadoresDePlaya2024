@@ -1,6 +1,59 @@
+import RPi.GPIO as GPIO
+import time
+import sys
 import cv2
 import numpy as np
 
+# Definición de pines para motor 1
+IN1 = 18  # Pin de dirección motor 1
+IN2 = 27  # Pin de dirección motor 1
+
+# Definición de pines para motor 2
+IN3 = 23  # Pin de dirección motor 2
+IN4 = 24  # Pin de dirección motor 2
+
+# Configuración de pines
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(IN1, GPIO.OUT)
+GPIO.setup(IN2, GPIO.OUT)
+GPIO.setup(IN3, GPIO.OUT)
+GPIO.setup(IN4, GPIO.OUT)
+
+# Función para mover ambos motores hacia adelante
+def forward():
+    GPIO.output(IN1, GPIO.HIGH)
+    GPIO.output(IN2, GPIO.LOW)
+    GPIO.output(IN3, GPIO.HIGH)
+    GPIO.output(IN4, GPIO.LOW)
+
+# Función para mover ambos motores hacia atrás
+def backward():
+    GPIO.output(IN1, GPIO.LOW)
+    GPIO.output(IN2, GPIO.HIGH)
+    GPIO.output(IN3, GPIO.LOW)
+    GPIO.output(IN4, GPIO.HIGH)
+
+# Función para girar a la izquierda
+def left():
+    GPIO.output(IN1, GPIO.HIGH)
+    GPIO.output(IN2, GPIO.LOW)
+    GPIO.output(IN3, GPIO.LOW)
+    GPIO.output(IN4, GPIO.HIGH)
+
+# Función para girar a la derecha
+def right():
+    GPIO.output(IN1, GPIO.LOW)
+    GPIO.output(IN2, GPIO.HIGH)
+    GPIO.output(IN3, GPIO.HIGH)
+    GPIO.output(IN4, GPIO.LOW)
+
+# Función para detener
+def stop():
+    GPIO.output(IN1, GPIO.LOW)
+    GPIO.output(IN2, GPIO.LOW)
+    GPIO.output(IN3, GPIO.LOW)
+    GPIO.output(IN4, GPIO.LOW)
+    
 # Función para detectar la tonalidad azul-celeste y negra en una imagen
 def detectar_tonalidad(imagen):
     # Convertir la imagen de BGR a HSV (Hue, Saturation, Value)
@@ -35,7 +88,10 @@ cam = cv2.VideoCapture(0)
 # Inicializar el contador
 contador = 0
 
-while True:
+# Lógica principal del programa
+try:
+    while True:
+    forward()
     # Capturar imagen de la cámara
     ret, frame = cam.read()
     
@@ -53,11 +109,18 @@ while True:
         
         if(porcentaje_azul_celeste>.50){
             #print("AGUA");
-
+            stop()
+            time.sleep(1.5)
+            backward();
+            time.sleep(2.5)
+            right()
+            time.sleep(2.5)
+            forward()
         }
         
         if(porcentaje_negro>.40){
             #print("LATA");
+            stop();
         }
         
         # Reiniciar el contador
@@ -70,7 +133,9 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Liberar la cámara y cerrar todas las ventanas
-cam.release()
-cv2.destroyAllWindows()
 
+except KeyboardInterrupt:
+    stop()  # Detiene los motores al presionar Ctrl+C
+
+finally:
+    GPIO.cleanup()  # Limpia los pines GPIO al salir del programa
