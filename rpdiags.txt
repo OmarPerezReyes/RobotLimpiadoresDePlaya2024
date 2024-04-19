@@ -1,0 +1,17 @@
+import RPi.GPIO as GPIO
+import time 
+
+out1 = 28
+
+
+GPIO.setmode(GIPIO.BMC)
+GPIO.setup(out1, GPIO.OUT)
+
+GPIO.output(out1, GPIO,HIGH)
+
+
+except KeyboardInterrupt:
+    stop()  # Detiene los motores al presionar Ctrl+C
+
+finally:
+    GPIO.cleanup()  # Limpia los pines GPIO al salir del programa
