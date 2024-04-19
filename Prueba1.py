@@ -129,6 +129,7 @@ try:
                 time.sleep(1.5);
                 GPIO.output(out1, GPIO.HIGH)  # Enciende el pin
                 forward()
+                GPIO.output(out1, GPIO.LOW)  # Apaga el pin
                 time.sleep(3.5);
                 GPIO.output(out1, GPIO.LOW)  # Apaga el pin
             
